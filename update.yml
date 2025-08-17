@@ -1,0 +1,21 @@
+- hosts: ubuntu
+  become: true
+  tasks:
+    - name: # Sync script directory with control node
+      ansible.posix.synchronize:
+        src: ./scripts/
+        dest: /usr/local/scripts/
+        delete: true
+        recursive: true
+        rsync_opts:
+          - "--chmod=F755"       
+          - "--perms"            # keep rights when syncing
+
+    - name: # Check exist
+      ansible.builtin.stat:
+        path: /usr/local/scripts/update.sh
+      register: update_sh
+
+    - name: # Run if exist
+      ansible.builtin.command: /usr/local/scripts/update.sh --check
+      when: update_sh.stat.exists
